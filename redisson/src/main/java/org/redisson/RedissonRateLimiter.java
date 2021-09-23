@@ -200,7 +200,7 @@ public class RedissonRateLimiter extends RedissonExpirable implements RRateLimit
                      + "local expiredValues = redis.call('zrangebyscore', permitsName, 0, tonumber(ARGV[2]) - interval); "
                      + "local released = 0; "
                      + "for i, v in ipairs(expiredValues) do "
-                          + "local random, permits = struct.unpack('fI', v);"
+                          + "local random, permits = struct.unpack('Lc0I', v);"
                           + "released = released + permits;"
                      + "end; "
 
@@ -214,13 +214,13 @@ public class RedissonRateLimiter extends RedissonExpirable implements RRateLimit
                          + "local nearest = redis.call('zrangebyscore', permitsName, '(' .. (tonumber(ARGV[2]) - interval), '+inf', 'withscores', 'limit', 0, 1); "
                          + "return tonumber(nearest[2]) - (tonumber(ARGV[2]) - interval);"
                      + "else "
-                         + "redis.call('zadd', permitsName, ARGV[2], struct.pack('fI', ARGV[3], ARGV[1])); "
+                         + "redis.call('zadd', permitsName, ARGV[2], struct.pack('Lc0I', string.len(ARGV[3]), ARGV[3], ARGV[1])); "
                          + "redis.call('decrby', valueName, ARGV[1]); "
                          + "return nil; "
                      + "end; "
               + "else "
                      + "redis.call('set', valueName, rate); "
-                     + "redis.call('zadd', permitsName, ARGV[2], struct.pack('fI', ARGV[3], ARGV[1])); "
+                     + "redis.call('zadd', permitsName, ARGV[2], struct.pack('Lc0I', string.len(ARGV[3]), ARGV[3], ARGV[1])); "
                      + "redis.call('decrby', valueName, ARGV[1]); "
                      + "return nil; "
               + "end;",
@@ -314,7 +314,7 @@ public class RedissonRateLimiter extends RedissonExpirable implements RRateLimit
                      + "local expiredValues = redis.call('zrangebyscore', permitsName, 0, tonumber(ARGV[1]) - interval); "
                      + "local released = 0; "
                      + "for i, v in ipairs(expiredValues) do "
-                          + "local random, permits = struct.unpack('fI', v);"
+                          + "local random, permits = struct.unpack('Lc0I', v);"
                           + "released = released + permits;"
                      + "end; "
 
